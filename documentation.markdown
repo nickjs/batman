@@ -23,7 +23,7 @@ We're targeting Chrome, Safari 4+, Firefox 3+, and IE 7+ for compatibility, alth
 
 #### Here's some code:
 
-```coffeescript
+{% highlight coffeescript %}
 class Shopify extends Batman.App
   @root 'products#index'
   @resources 'products'
@@ -37,11 +37,11 @@ class Shopify.ProductsController extends Batman.Controller
 
   show: (params) ->
     @product = Shopify.Product.find params.id
-```
+{% endhighlight %}
 
 #### views/products/index.html
 
-```html
+{% highlight html %}
 <ul id="products">
   <li data-foreach-product="Product.all" data-mixin="animation">
     <a data-route="product" data-bind="product.name">name will go here</a>
@@ -49,23 +49,29 @@ class Shopify.ProductsController extends Batman.Controller
 
   <li><span data-bind="products.length"></span> <span data-bind="'products' | pluralize products.length"></span></li>
 </ul>
-```
+{% endhighlight %}
 
 ## Installation
 
 If you haven't already, you'll need to install [node.js](http://nodejs.org) and [npm](http://npmjs.org/). Then:
 
-    npm install -g batman
+{% highlight bash %}
+npm install -g batman
+{% endhighlight %}
 
 Generate a new batman.js app somewhere, called my_app:
 
-    cd ~/code
-    batman new my_app
+{% highlight bash %}
+cd ~/code
+batman new my_app
+{% endhighlight %}
 
 Fire it up:
 
-    cd my_app
-    batman server # (or just "batman s")
+{% highlight bash %}
+cd my_app
+batman server # (or just "batman s")
+{% endhighlight %}
 
 Now visit [http://localhost:1047](http://localhost:1047) and start playing around!
 
@@ -77,44 +83,44 @@ Most of the classes you work with in your app code will descend from `Batman.Obj
 
 If you want to define observable events on your objects, just wrap a function with the `@event` macro in a class definition:
 
-```coffeescript
+{% highlight coffeescript %}
 class BatBelt.Gadget extends Batman.Object
   constructor: -> @usesLeft = 5
   use: @event (times) ->
     return false unless (@usesLeft - times) >= 0
     @usesLeft -= times
-```
+{% endhighlight %}
 
 You can observe the event with some callback, and fire it by just calling the event function directly. The observer callback gets whichever arguments were passed into the event function. But if the even function returns `false`, then the observers won't fire:
 
-```coffeescript
+{% highlight coffeescript %}
 gadget.observe 'use', (times) ->
   console.log "gadget was used #{times} times!"
 gadget.use(2)
 # console output: "gadget was used 2 times!"
 gadget.use(6)
 # nothing happened!
-```
+{% endhighlight %}
 
 ### Observable Properties
 
 The `observe` function is also used to observe changes to properties. This forms the basis of the binding system. Here's a simple example:
 
-```coffeescript
+{% highlight coffeescript %}
 gadget.observe 'name', (newVal, oldVal) ->
   console.log "name changed from #{oldVal} to #{newVal}!"
 gadget.set 'name', 'Batarang'
 # console output: "name changed from undefined to Batarang!"
-```
+{% endhighlight %}
 
 You can also `get` properties to return their values, and if you want to remove them completely then you can `unset` them:
 
-```coffeescript
+{% highlight coffeescript %}
 gadget.get 'name'
 # returns: 'Batarang'
 gadget.unset 'name'
 # console output: "name changed from Batarang to undefined!"
-```
+{% endhighlight %}
 
 By default, these properties are stored like plain old JavaScript properties: that is, `gadget.name` would return "Batarang" just like you'd expect. But if you set the gadget's name with `gadget.name = 'Shark Spray'`, then the observer function you set on `gadget` will not fire. So when you're working with batman.js properties, use `get`/`set`/`unset` to read/write/delete properties.
 
@@ -123,7 +129,7 @@ By default, these properties are stored like plain old JavaScript properties: th
 
 What's the point of using `gadget.get 'name'` instead of just `gadget.name`? Well, a Batman properties doesn't need to correspond with a vanilla JS property. Let's write a `Box` class with a custom getter for its volume:
 
-```coffeescript
+{% highlight coffeescript %}
 class Box extends Batman.Object
   constructor: (@length, @width, @height) ->
   @accessor 'volume',
@@ -132,20 +138,20 @@ class Box extends Batman.Object
 box = new Box(16,16,12)
 box.get 'volume'
 # returns 3072
-```
+{% endhighlight %}
 
 The really cool thing about this is that, because we used `@get` to access the component properties of `volume`, batman.js can keep track of those dependencies and let us observe the `volume` directly:
 
-```coffeescript
+{% highlight coffeescript %}
 box.observe 'volume', (newVal, oldVal) ->
   console.log "volume changed from #{oldVal} to #{newVal}!"
 box.set 'height', 6
 # console output: "volume changed from 3072 to 1536!"
-```
+{% endhighlight %}
 
 The box's `volume` is a read-only attribute here, because we only provided a getter in the accessor we defined. Here's a `Person` class with a (rather naive) read-write accessor for their name:
 
-```coffeescript
+{% highlight coffeescript %}
 class Person extends Batman.Object
   constructor: (name) -> @set 'name', name
   @accessor 'name',
@@ -157,36 +163,36 @@ class Person extends Batman.Object
     unset: (key) ->
       @unset 'firstName'
       @unset 'lastName'
-```
+{% endhighlight %}
 
 ### Keypaths
 
 If you want to get at properties of properties, use keypaths:
 
-```coffeescript
+{% highlight coffeescript %}
 employee.get 'team.manager.name'
-```
+{% endhighlight %}
 
 This does what you expect and is pretty much the same as `employee.get('team').get('manager').get('name')`. If you want to observe a deep keypath for changes, go ahead:
 
-```coffeescript
+{% highlight coffeescript %}
 employee.observe 'team.manager.name', (newVal, oldVal) ->
   console.log "you now answer to #{newVal || 'nobody'}!"
 manager = employee.get 'team.manager'
 manager.set 'name', 'Bill'
 # console output: "you now answer to Bill!"
-```
+{% endhighlight %}
 
 If any component of the keypath is set to something that would change the overall value, then observers will fire:
 
-```coffeescript
+{% highlight coffeescript %}
 employee.set 'team', larrysTeam
 # console output: "you now answer to Larry!"
 employee.team.unset 'manager'
 # console output: "you now answer to nobody!"
 employee.set 'team', jessicasTeam
 # console output: "you now answer to Jessica!"
-```
+{% endhighlight %}
 
 batman.js's dependency tracking system makes sure that no matter how weird your object graph gets, your observers will fire exactly when they should.
 
@@ -207,7 +213,7 @@ Sitting in front of everything else is a subclass of `Batman.App` which represen
 
 Here's a simple app class:
 
-```coffeescript
+{% highlight coffeescript %}
 class BatBelt extends Batman.App
   @global yes
 
@@ -217,7 +223,7 @@ class BatBelt extends Batman.App
   @root 'app#index'
   @route 'faq/:questionID', 'app#faq'
   @resources 'gadgets'
-```
+{% endhighlight %}
 
 The `@global yes` declaration just makes the class global on the browser's `window` object.
 
@@ -235,63 +241,63 @@ For the FAQ route, `'app#faq'` specifies the `faq` function on `BatBelt.AppContr
 
 The `@resources` macro takes a resource name which should ideally be the underscored-pluralized name of one of your models. It sets up three routes, as if you'd used the `@route` macro like so:
 
-```coffeescript
+{% highlight coffeescript %}
 @route 'gadgets', 'gadgets#index'
 @route 'gadgets/:id', 'gadgets#show'
 @route 'gadgets/:id/edit', 'gadgets#edit'
-```
+{% endhighlight %}
 
 In addition to setting up these routes, the call to `@resources` keeps track of the fact that the `Gadget` model can be accessed in these ways. This lets you load these routes in your controllers or views by using model instances and classes on their own:
 
-```coffeescript
+{% highlight coffeescript %}
 class BatBelt.GadgetsController extends Batman.Controller
   someEventHandler: (node, event) ->
     @redirect BatBelt.Gadget.find(1) # redirects to "/gadgets/1"
   someOtherHandler: (node, event) ->
     @redirect BatBelt.Gadget # redirects to "/gadgets"
-```
+{% endhighlight %}
 
 ### Controllers
 
 batman.js controllers are singleton classes with one or more instance methods that can serve as routable actions. Because they're singletons, instance variables persist as long as the app is running.
 
-```coffeescript
+{% highlight coffeescript %}
 class BatBelt.AppController extends Batman.Controller
   index: ->
   faq: (params) ->
     @question = @questions.get(params.questionID)
-```
+{% endhighlight %}
 
 Now when you navigate to `/#!/faq/what-is-art`, the dispatcher runs this `faq` action with `{questionID: "what-is-art"}`. It also makes an implicit call to `@render`, which by default will look for a view at `/views/app/faq.html`. The view is rendered within the main content container of the page, which is designated by setting `data-yield="main"` on some tag in the layout's HTML. You can prevent this implicit rendering by calling `@render false` in your action.
 
 Controllers are also a fine place to put event handlers used by your views. Here's one that uses [jQuery](http://jquery.com/) to toggle a CSS class on a button:
 
-```coffeescript
+{% highlight coffeescript %}
 class MyApp.BigRedButtonController extends Batman.Controller
   index: ->
 
   buttonWasClicked: (node, event) ->
     $(node).toggleClass('activated')
-```
+{% endhighlight %}
 
 If you want to redirect to some route, you can use `@redirect`:
 
-```coffeescript
+{% highlight coffeescript %}
 buttonWasClicked: (node, event) ->
   $(node).toggleClass('activated')
   @redirect '/apocalypse/'
-```
+{% endhighlight %}
 
 ### Views
 
 You write views in plain HTML. These aren't templates in the usual sense: the HTML is rendered in the page as-is, and you use `data-*` attributes to specify how different parts of the view bind to your app's data. Here's a very small view which displays a user's name and avatar:
 
-```html
+{% highlight html %}
 <div class="user">
   <img data-bind-src="user.avatarURL" />
   <p data-bind="user.name"></p>
 </div>
-```
+{% endhighlight %}
 
 The `data-bind` attribute on the `<p>` tag sets up a binding between the user's `name` property and the content of the tag. The `data-bind-src` attribute on the `<img>` tag binds the user's `avatarURL` property to the `src` attribute of the tag. You can do the same thing for arbitrary attribute names, so for example `data-bind-href` would bind to the `href` attribute.
 
@@ -341,7 +347,7 @@ batman.js models:
 
 A model object may have arbitrary properties set on it, just like any JS object. Only some of those properties are serialized and persisted to its storage backends, however. You define persisted attributes on a model with the `encode` macro:
 
-```coffeescript
+{% highlight coffeescript %}
   class Article extends Batman.Model
     @encode 'body_html', 'title', 'author', 'summary_html', 'blog_id', 'id', 'user_id'
     @encode 'created_at', 'updated_at', 'published_at',
@@ -350,17 +356,17 @@ A model object may have arbitrary properties set on it, just like any JS object.
     @encode 'tags',
       encode: (tagSet) -> tagSet.toArray().join(', ')
       decode: (tagString) -> new Batman.Set(tagString.split(', ')...)
-```
+{% endhighlight %}
 
 Given one or more strings as arguments, `@encode` will register these properties as persisted attributes of the model, to be serialized in the model's `toJSON()` output and extracted in its `fromJSON()`. Properties that aren't specified with `@encode` will be ignored for both serialization and deserialization. If an optional coder object is provided as the last argument, its `encode` and `decode` functions will be used by the model for serialization and deserialization, respectively.
 
 By default, a model's primary key (the unchanging property which uniquely indexes its instances) is its `id` property. If you want your model to have a different primary key, specify it with the `@id` macro:
 
-```coffeescript
+{% highlight coffeescript %}
 class User extends Batman.Model
   @encode 'handle', 'email'
   @id 'handle'
-```
+{% endhighlight %}
 
 #### States
 
@@ -382,12 +388,12 @@ Before models are saved to persistent storage, they run through any validations 
 
 Validations are defined with the `@validate` macro by passing it the properties to be validated and an options object representing the particular validations to perform:
 
-```coffeescript
+{% highlight coffeescript %}
 class User extends Batman.Model
   @encode 'login', 'password'
   @validate 'login', presence: yes, maxLength: 16
   @validate 'password', 'passwordConfirmation', presence: yes, lengthWithin: [6,255]
-```
+{% endhighlight %}
 
 The options get their meaning from subclasses of `Batman.Validator` which have been registered by adding them to the `Batman.Validators` array. For example, the `maxLength` and `lengthWithin` options are used by `Batman.LengthValidator`.
 
@@ -396,21 +402,21 @@ The options get their meaning from subclasses of `Batman.Validator` which have b
 
 To specify a storage adapter for persisting a model, use the `@persist` macro in its class definition:
 
-```coffeescript
+{% highlight coffeescript %}
 class Product extends Batman.Model
   @persist Batman.LocalStorage
-```
+{% endhighlight %}
 
 Now when you call `save()` or `load()` on a product, it will use the browser window's [localStorage](https://developer.mozilla.org/en/dom/storage) to retrieve or store the serialized data.
 
 If you have a REST backend you want to connect to, `Batman.RestStorage` is a simple storage adapter which can be subclassed and extended to suit your needs. By default, it will assume your CamelCased-singular `Product` model is accessible at the underscored-pluralized "/products" path, with instances of the resource accessible at `/products/:id`. You can override these path defaults by assigning either a string or a function-returning-a-string to the `url` property of your model class (for the collection path) or to the prototype (for the member path). For example:
 
-```coffeescript
+{% highlight coffeescript %}
 class Product extends Batman.Model
   @persist Batman.RestStorage
   @url = "/admin/products"
   url: -> "/admin/products/#{@id}"
-```
+{% endhighlight %}
 
 # Contributing
 
