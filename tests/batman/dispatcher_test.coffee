@@ -111,7 +111,9 @@ asyncTest 'resources', ->
   $redirect 'products/1'
 
 asyncTest 'hash manager', ->
-  @App.route 'test', spy = createSpy()
+  spy = createSpy()
+  @App.route 'test', ->
+    console.error 'WTFFFF'
   @App.route 'test2', spy2 = createSpy()
   @App.run()
 
